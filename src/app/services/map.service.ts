@@ -21,29 +21,8 @@ export class MapService {
 
   constructor() {
     this.mapbox.accessToken = environment.mapBoxToken;
+
     this.getCurrentPosition();
-  }
-
-  getCurrentPosition(): void {
-    Geolocation.getCurrentPosition({ enableHighAccuracy: true })
-      .then((position: GeolocationPosition) => {
-        this.setCenter(position);
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  }
-
-  watchPosition(): void {
-    Geolocation.watchPosition({ enableHighAccuracy: true }, position => {
-      this.setCenter(position);
-    });
-  }
-
-  setCenter(position: GeolocationPosition): void {
-    this.lat = position.coords.latitude;
-    this.lng = position.coords.longitude;
-    this.map.setCenter({ lat: this.lat, lng: this.lng });
   }
 
   buildMap() {
@@ -61,5 +40,28 @@ export class MapService {
     });
 
     this.watchPosition();
+  }
+
+  private getCurrentPosition(): void {
+    Geolocation.getCurrentPosition({ enableHighAccuracy: true }).then(
+      (position: GeolocationPosition) => {
+        this.setCenter(position);
+      }
+    );
+  }
+
+  private watchPosition(): void {
+    Geolocation.watchPosition(
+      { enableHighAccuracy: true },
+      (position: GeolocationPosition) => {
+        this.setCenter(position);
+      }
+    );
+  }
+
+  private setCenter(position: GeolocationPosition): void {
+    this.lat = position.coords.latitude;
+    this.lng = position.coords.longitude;
+    this.map.setCenter([this.lng, this.lat]);
   }
 }
