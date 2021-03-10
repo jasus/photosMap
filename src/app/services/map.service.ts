@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 
+import { Plugins, GeolocationPosition } from '@capacitor/core';
+
+const { Geolocation } = Plugins;
+
 import * as mapboxgl from 'mapbox-gl';
 
 @Injectable({
@@ -17,6 +21,29 @@ export class MapService {
 
   constructor() {
     this.mapbox.accessToken = environment.mapBoxToken;
+    this.getCurrentPosition();
+  }
+
+  getCurrentPosition(): void {
+    Geolocation.getCurrentPosition({ enableHighAccuracy: true })
+      .then((position: GeolocationPosition) => {
+        this.setCenter(position);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  watchPosition(): void {
+    Geolocation.watchPosition({ enableHighAccuracy: true }, position => {
+      this.setCenter(position);
+    });
+  }
+
+  setCenter(position: GeolocationPosition): void {
+    this.lat = position.coords.latitude;
+    this.lng = position.coords.longitude;
+    this.map.setCenter({ lat: this.lat, lng: this.lng });
   }
 
   buildMap() {
@@ -32,5 +59,7 @@ export class MapService {
     this.map.on('load', () => {
       this.map.resize();
     });
+
+    this.watchPosition();
   }
 }
