@@ -35,7 +35,6 @@ export class Tab2Page {
       // if desired (or pass resultType: CameraResultType.Base64 to getPhoto)
       const imageUrl = image.webPath;
       // Can be set to the src of an image now
-      // imageElement.src = imageUrl;
       this.post.images.push(imageUrl);
     });
   }
