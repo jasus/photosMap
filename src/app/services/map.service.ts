@@ -3,9 +3,11 @@ import { environment } from '@env/environment';
 
 import { Plugins, GeolocationPosition } from '@capacitor/core';
 
-const { Geolocation } = Plugins;
+const { Geolocation, Storage } = Plugins;
 
 import * as mapboxgl from 'mapbox-gl';
+import { Post } from '@interfaces/post';
+import { Coords } from '@interfaces/coords';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +20,8 @@ export class MapService {
   private lat = 36.71296;
   private lng = -4.43026;
   private zoom = 15;
+
+  // post: any;
 
   constructor() {
     this.mapbox.accessToken = environment.mapBoxToken;
@@ -36,10 +40,44 @@ export class MapService {
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
     this.map.on('load', () => {
-      this.map.resize();
+      this.resize();
+      // this.getPost();
     });
 
     this.watchPosition();
+  }
+
+  // getPost(): void {
+  //   Storage.get({ key: 'user' }).then(res => {
+  //     this.post = JSON.parse(res.value);
+  //     this.setMarker(this.post);
+  //   });
+  // }
+
+  setMarker(post: Post): void {
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundImage = `url(${post.images[0]}` + ')';
+    el.style.width = '50px';
+    el.style.height = '50px';
+
+    new mapboxgl.Marker(el)
+      .setLngLat([post.coords.lng, post.coords.lat])
+      .addTo(this.map);
+  }
+
+  getCoords(): Coords {
+    return {
+      lat: this.lat,
+      lng: this.lng
+    };
+  }
+
+  resize() {
+    if (this.map !== undefined) {
+      this.map.resize();
+    }
   }
 
   private getCurrentPosition(): void {
@@ -54,7 +92,7 @@ export class MapService {
     Geolocation.watchPosition(
       { enableHighAccuracy: true },
       (position: GeolocationPosition) => {
-        this.setCenter(position);
+        // this.setCenter(position);
       }
     );
   }

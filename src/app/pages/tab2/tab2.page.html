@@ -5,7 +5,9 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button [disabled]="post.title.length < 1">Compartir</ion-button>
+      <ion-button [disabled]="post.title.length < 1" (click)="sharePost()"
+        >Compartir</ion-button
+      >
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
