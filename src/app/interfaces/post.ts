@@ -1,4 +1,4 @@
-import { Coords } from '@interfaces/coords';
+import { Coords } from './coords';
 
 export interface Post {
   title: string;

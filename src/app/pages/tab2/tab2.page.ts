@@ -7,7 +7,7 @@ import {
   CameraPhoto,
   CameraSource
 } from '@capacitor/core';
-import { Post } from '@interfaces/post';
+import { Post } from '@interfaces/index';
 const { Camera, Storage } = Plugins;
 
 @Component({
