@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MapService } from '@services/map.service';
 
 import {
   Plugins,
@@ -6,7 +7,8 @@ import {
   CameraPhoto,
   CameraSource
 } from '@capacitor/core';
-const { Camera } = Plugins;
+import { Post } from '@interfaces/index';
+const { Camera, Storage } = Plugins;
 
 @Component({
   selector: 'app-tab2',
@@ -14,14 +16,15 @@ const { Camera } = Plugins;
   styleUrls: ['tab2.page.scss']
 })
 export class Tab2Page {
-  post = {
+  post: Post = {
     title: '',
-    images: []
+    images: [],
+    coords: { lat: 0, lng: 0 }
   };
 
-  constructor() {}
+  constructor(private mapService: MapService) {}
 
-  takePicture() {
+  takePicture(): void {
     Camera.getPhoto({
       quality: 100,
       allowEditing: false,
@@ -29,13 +32,24 @@ export class Tab2Page {
       correctOrientation: true,
       source: CameraSource.Camera
     }).then((image: CameraPhoto) => {
-      // image.webPath will contain a path that can be set as an image src.
-      // You can access the original file using image.path, which can be
-      // passed to the Filesystem API to read the raw data of the image,
-      // if desired (or pass resultType: CameraResultType.Base64 to getPhoto)
       const imageUrl = image.webPath;
-      // Can be set to the src of an image now
       this.post.images.push(imageUrl);
+    });
+  }
+
+  sharePost(): void {
+    const cords = this.mapService.getCoords();
+    this.post.coords = cords;
+    Storage.set({
+      key: '1',
+      value: JSON.stringify(this.post)
+    }).then(() => {
+      this.mapService.setMarker(this.post);
+      this.post = {
+        title: '',
+        images: [],
+        coords: { lat: 0, lng: 0 }
+      };
     });
   }
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MapService } from '../../services/map.service';
 
 @Component({
   selector: 'app-tab1',
@@ -6,7 +7,9 @@ import { Component } from '@angular/core';
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page {
+  constructor(private mapService: MapService) {}
 
-  constructor() {}
-
+  ionViewDidEnter() {
+    this.mapService.resize();
+  }
 }
