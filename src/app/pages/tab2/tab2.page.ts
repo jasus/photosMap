@@ -2,13 +2,15 @@ import { Component } from '@angular/core';
 import { MapService } from '@services/map.service';
 
 import {
+  Capacitor,
   Plugins,
   CameraResultType,
   CameraPhoto,
-  CameraSource
+  CameraSource,
+  FilesystemDirectory
 } from '@capacitor/core';
 import { Post } from '@interfaces/index';
-const { Camera, Storage } = Plugins;
+const { Camera, Storage, Filesystem } = Plugins;
 
 @Component({
   selector: 'app-tab2',
@@ -24,27 +26,48 @@ export class Tab2Page {
 
   constructor(private mapService: MapService) {}
 
-  takePicture(): void {
-    Camera.getPhoto({
-      quality: 100,
+  async takePicture() {
+    const originalPhoto = await Camera.getPhoto({
+      quality: 30,
       allowEditing: false,
       resultType: CameraResultType.Uri,
       correctOrientation: true,
       source: CameraSource.Camera
-    }).then((image: CameraPhoto) => {
-      const imageUrl = image.webPath;
-      this.post.images.push(imageUrl);
     });
+
+    const photoInTempStorage = await Filesystem.readFile({
+      path: originalPhoto.path
+    });
+
+    const date = new Date();
+    const time = date.getTime();
+    const fileName = time + '.jpeg';
+
+    await Filesystem.writeFile({
+      data: photoInTempStorage.data,
+      path: fileName,
+      directory: FilesystemDirectory.Data
+    });
+
+    const finalPhotoUri = await Filesystem.getUri({
+      directory: FilesystemDirectory.Data,
+      path: fileName
+    });
+
+    const photoPath = Capacitor.convertFileSrc(finalPhotoUri.uri);
+
+    this.post.images.push(photoPath);
   }
 
   sharePost(): void {
     const cords = this.mapService.getCoords();
     this.post.coords = cords;
+    this.mapService.postList.push(this.post);
     Storage.set({
-      key: '1',
-      value: JSON.stringify(this.post)
+      key: 'posts',
+      value: JSON.stringify(this.mapService.postList)
     }).then(() => {
-      this.mapService.setMarker(this.post);
+      this.mapService.createMarker(this.post);
       this.post = {
         title: '',
         images: [],

@@ -21,6 +21,8 @@ export class MapService {
   private lng = -4.43026;
   private zoom = 15;
 
+  public postList: Post[] = [];
+
   constructor() {
     this.mapbox.accessToken = environment.mapBoxToken;
 
@@ -46,7 +48,7 @@ export class MapService {
     this.watchPosition();
   }
 
-  setMarker(post: Post): void {
+  createMarker(post: Post): void {
     const el = document.createElement('div');
     el.className = 'marker';
     el.style.backgroundSize = 'cover';
@@ -61,9 +63,10 @@ export class MapService {
   }
 
   getCoords(): Coords {
+    const { lng, lat } = this.map.getCenter();
     return {
-      lat: this.lat,
-      lng: this.lng
+      lat,
+      lng
     };
   }
 
@@ -74,10 +77,16 @@ export class MapService {
   }
 
   private getPostsFromStorage(): void {
-    let post: Post;
-    Storage.get({ key: '1' }).then(objectStorage => {
-      post = JSON.parse(objectStorage.value);
-      this.setMarker(post);
+    Storage.get({ key: 'posts' }).then(objectStorage => {
+      this.postList = JSON.parse(objectStorage.value);
+
+      if (this.postList !== null && this.postList.length > 0) {
+        this.postList.forEach(post => {
+          this.createMarker(post);
+        });
+      } else {
+        this.postList = [];
+      }
     });
   }
 
